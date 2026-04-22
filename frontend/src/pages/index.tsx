@@ -1,4 +1,5 @@
 import Head from "next/head";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import FactorySection from "@/components/FactorySection";
@@ -44,13 +45,23 @@ export default function HomePage() {
       </section>
 
       <section className="container-main pb-12">
-        <h2 className="mb-5 text-2xl font-bold">热销商品</h2>
+        <div className="mb-5 flex flex-wrap items-center gap-2 sm:gap-3">
+          <h2 className="text-2xl font-bold">热销商品</h2>
+          <Image
+            src="/images/home-hot-side.png"
+            alt=""
+            width={44}
+            height={44}
+            className="h-10 w-10 shrink-0 rounded-full object-cover ring-1 ring-amber-200/60 sm:h-11 sm:w-11"
+          />
+        </div>
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
           {featured.map((item) => (
             <ProductCard key={item.id} product={item} />
           ))}
         </div>
       </section>
+
       <FactorySection />
     </>
   );

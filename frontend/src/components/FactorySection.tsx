@@ -1,8 +1,20 @@
+import Image from "next/image";
+
 export default function FactorySection() {
   return (
     <section className="container-main pb-12">
       <div className="rounded-3xl bg-white p-8 shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-wide text-brand-700">Factory & Quality</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-sm font-semibold uppercase tracking-wide text-brand-700">Factory & Quality</p>
+          <Image
+            src="/images/home-doghouse.png"
+            alt=""
+            width={64}
+            height={64}
+            className="h-12 w-12 shrink-0 rounded-full object-cover ring-1 ring-amber-200/50 sm:h-14 sm:w-14"
+            aria-hidden
+          />
+        </div>
         <h2 className="mt-3 text-2xl font-bold">用心做宠物用品，让家长放心</h2>
         <p className="mt-4 text-stone-700">
           我们用心对待每一个毛孩子，从原料筛选、生产工艺到出厂检测，始终坚持专业品控与优选标准，

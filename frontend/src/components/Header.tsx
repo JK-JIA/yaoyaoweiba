@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/hooks/useCart";
 
@@ -17,8 +18,20 @@ export default function Header() {
   return (
     <header className="border-b border-amber-100 bg-white/90 backdrop-blur">
       <div className="container-main flex flex-wrap items-center justify-between gap-3 py-4">
-        <Link href="/" className="text-xl font-bold text-brand-700">
-          摇摇尾巴
+        <Link
+          href="/"
+          className="flex items-center gap-2 text-xl font-bold text-brand-700"
+          aria-label="摇摇尾巴首页"
+        >
+          <span>摇摇尾巴</span>
+          <Image
+            src="/images/brand-logo.png"
+            alt=""
+            width={40}
+            height={40}
+            className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-amber-200/70 sm:h-10 sm:w-10"
+            priority
+          />
         </Link>
         <nav className="flex flex-wrap gap-4 text-sm font-medium text-stone-700">
           {navItems.map((item) => (
