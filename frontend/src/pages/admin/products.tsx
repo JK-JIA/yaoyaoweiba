@@ -48,7 +48,9 @@ export default function AdminProductsPage() {
         }
       } catch {
         if (!cancelled) {
-          setLoadError("无法连接商品接口，请确认后端已启动（默认 http://localhost:4000）。");
+          setLoadError(
+            "无法连接商品接口。请确认后端已启动；生产环境勿使用 localhost，可保持 NEXT_PUBLIC_API_URL 为空以走同域 /api，或由 Nginx 把 /api 转到后端。"
+          );
           setProducts(getAllProducts());
         }
       }
@@ -69,7 +71,9 @@ export default function AdminProductsPage() {
       setProducts(saved);
       setSaveError("");
     } catch {
-      setSaveError("保存失败：请检查后端是否运行，或管理员密码是否与接口环境变量 ADMIN_PASSWORD 一致。");
+      setSaveError(
+        "保存失败：请确认后端可访问、管理员密码与 ADMIN_PASSWORD 一致；若接口走同域 /api，请确认反代与 CORS 配置正确。"
+      );
     }
   };
 
