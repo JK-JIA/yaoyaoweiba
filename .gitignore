@@ -1,0 +1,16 @@
+# 依赖与构建产物（任意层级）
+node_modules/
+.next/
+dist/
+
+# 仓库根误生成的缓存（勿在根目录 npm install）
+/.npm-cache/
+
+.env
+*.log
+
+# 运行时数据（本地 / 服务器卷，勿提交）
+backend/data/
+
+# 脚本生成的部署包
+yaoyaoweiba-site-deploy-*.zip
