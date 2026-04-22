@@ -13,10 +13,10 @@ npm install
 npm run dev
 ```
 
-默认监听 `http://localhost:4000`。环境变量：
+默认监听 **`http://127.0.0.1:4000`**（与 `PORT` 一致）。环境变量：
 
 - `ADMIN_PASSWORD`：管理保存接口密码（默认 `yaoyaoweiba123`）
-- `FRONTEND_URL`：CORS 允许的站点（默认 `http://localhost:3000`）
+- `FRONTEND_URL`：CORS 允许的站点；可逗号分隔多个；不设时开发模式会包含本机常用前端 Origin
 
 **2）启动前端**
 
@@ -28,8 +28,8 @@ npm run dev
 
 环境变量（可选）：
 
-- `NEXT_PUBLIC_API_URL`：浏览器访问的 API 根地址（默认 `http://localhost:4000`）
-- `API_INTERNAL_URL`：仅服务端请求用（本地一般可不设）
+- `NEXT_PUBLIC_API_URL`：留空时浏览器走 **同域 `/api`**（`next dev` 会反代到 `127.0.0.1:4000`）；仅在同域反代不可用时再填完整 API 根地址  
+- `API_INTERNAL_URL`：仅服务端请求用（本地一般可不设）  
 - `NEXT_PUBLIC_ADMIN_PASSWORD`：需与后端 `ADMIN_PASSWORD` 一致，否则登录后保存会 401
 
 ## 减小上传体积（不要整目录打包 1GB+）
@@ -49,26 +49,44 @@ npm run dev
 
 ## Docker Compose（同一台机器）
 
+**重要**：Compose 只会自动读取项目根目录的 **`.env`**，**不会**读取 `.env.example`。部署前请执行：
+
+```bash
+cp .env.example .env
+# 再编辑 .env，至少设置 FRONTEND_URL 为你的 https 域名
+```
+
 在项目根目录：
 
 ```bash
 docker compose up --build
 ```
 
-- 前端：<http://localhost:3000>（页面内请求走 **同域 `/api`**，由 Next 反代到 `api` 容器，**不要**在浏览器里写 `localhost:4000`）  
-- 后端（宿主机直连调试用）：<http://localhost:4000>  
+**服务器上 `git pull` 之后**：只执行 `docker compose up -d` **不会**用新代码重建镜像，浏览器仍是旧版。请执行：
+
+```bash
+docker compose build web && docker compose up -d
+```
+
+或使用：`bash scripts/deploy-update.sh`
+
+若仍异常，可强制无缓存构建：`docker compose build --no-cache web && docker compose up -d`
+
+- 前端（宿主机）：**`http://127.0.0.1:3000`**（页面内请求走 **同域 `/api`**，由 Next 反代到 `api` 容器）  
+- 后端（宿主机直连调试用）：**`http://127.0.0.1:4000`**  
 - 商品数据卷：`api_data`（容器内 `/app/data`）
 
-修改管理员密码时，请同时设置构建参数与后端环境（示例 `.env`）：
+**生产环境**：在项目根创建 `.env`（可参考 `.env.example`），至少设置：
 
 ```env
 ADMIN_PASSWORD=你的强密码
-# 留空：浏览器使用当前站点 /api，由前端容器反代到 api:4000（推荐）
 NEXT_PUBLIC_API_URL=
-FRONTEND_URL=http://localhost:3000
+FRONTEND_URL=https://你的实际域名
 ```
 
-线上若有域名，请把 `FRONTEND_URL` 设为实际站点地址（与浏览器访问一致），以便后端 CORS 在需要时放行。使用 Nginx 时：要么 **`/api` 反代到后端**，要么 **`/api` 仍交给 Next** 由容器内 rewrites 转发，二选一即可；**切勿**把前端里的 `NEXT_PUBLIC_API_URL` 设为 `http://localhost:4000`（浏览器会连用户自己电脑）。
+`FRONTEND_URL` 必须与浏览器地址栏的 **协议 + 域名（+ 非默认端口）** 完全一致；多个前台域名用英文逗号分隔。后端在 `NODE_ENV=production` 时 **只信任** `FRONTEND_URL` 列出的 Origin（外加未配置时的兜底，见代码）。
+
+使用 Nginx 时：`/api` 交给 Next（由容器内 rewrites 转发）或 **`/api` 直接反代到后端** 均可；**切勿**在公网前端构建里把 `NEXT_PUBLIC_API_URL` 写成指向访客本机的回环地址。
 
 `docker compose` 会使用 `ADMIN_PASSWORD` 作为前端镜像构建参数 `NEXT_PUBLIC_ADMIN_PASSWORD`，保证登录校验与保存接口一致。
 
@@ -80,4 +98,4 @@ FRONTEND_URL=http://localhost:3000
 | GET | `/api/products` | 获取商品列表 |
 | PUT | `/api/products` | 全量保存商品，请求头 `X-Admin-Token: <ADMIN_PASSWORD>` |
 
-购物车仍为浏览器 `localStorage`，不经过后端。
+购物车数据仅存于**浏览器端存储**，不经过后端。

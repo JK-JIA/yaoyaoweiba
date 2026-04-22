@@ -48,8 +48,9 @@ export default function AdminProductsPage() {
         }
       } catch {
         if (!cancelled) {
+          const origin = typeof window !== "undefined" ? window.location.origin : "";
           setLoadError(
-            "无法连接商品接口。请确认后端已启动；生产环境勿使用 localhost，可保持 NEXT_PUBLIC_API_URL 为空以走同域 /api，或由 Nginx 把 /api 转到后端。"
+            `无法连接商品接口（已请求 ${origin}/api/products）。请确认后端已启动、Nginx 将 /api 交给 Next 或后端、并已执行 docker compose build --no-cache web 且硬刷新浏览器。`
           );
           setProducts(getAllProducts());
         }
@@ -139,6 +140,13 @@ export default function AdminProductsPage() {
           <ProductForm onSubmit={handleCreate} />
           <ProductForm initialValue={editing} onSubmit={handleUpdate} onCancel={() => setEditing(undefined)} />
         </div>
+
+        <p className="mt-6 rounded-lg bg-stone-100 px-3 py-2 text-center text-xs text-stone-500">
+          前端构建标记：<span className="font-mono text-stone-700">{process.env.NEXT_PUBLIC_BUILD_TAG ?? "unknown"}</span>
+          。若上方报错仍出现「默认 localhost:4000」等旧文案，说明<strong>不是</strong>本构建；请服务器执行{" "}
+          <code className="rounded bg-white px-1">{"docker compose build --no-cache web && docker compose up -d"}</code>{" "}
+          并确认项目根存在 <code className="rounded bg-white px-1">.env</code>（由 <code className="rounded bg-white px-1">.env.example</code> 复制）。
+        </p>
 
         <div className="mt-8 rounded-2xl bg-white p-4 shadow-sm">
           <h2 className="text-xl font-semibold">当前商品列表</h2>

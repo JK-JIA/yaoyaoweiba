@@ -6,11 +6,26 @@ import { Product } from "./types";
 const app = express();
 const port = Number(process.env.PORT || 4000);
 const adminPassword = process.env.ADMIN_PASSWORD || "yaoyaoweiba123";
-const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+
+/** 生产环境仅使用 FRONTEND_URL（可逗号分隔多个）；开发环境额外放行本机前端端口 */
+function buildCorsOrigins(): string[] {
+  const fromEnv = (process.env.FRONTEND_URL || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+  const isProd = process.env.NODE_ENV === "production";
+  if (isProd) {
+    return fromEnv.length > 0 ? fromEnv : ["http://127.0.0.1:3000"];
+  }
+  const devFallback = ["http://127.0.0.1:3000", "http://localhost:3000"];
+  return Array.from(new Set([...fromEnv, ...devFallback]));
+}
+
+const corsOrigins = buildCorsOrigins();
 
 app.use(
   cors({
-    origin: [frontendUrl, "http://127.0.0.1:3000", "http://localhost:3000"],
+    origin: corsOrigins.length === 1 ? corsOrigins[0] : corsOrigins,
     methods: ["GET", "PUT", "OPTIONS"],
     allowedHeaders: ["Content-Type", "X-Admin-Token"]
   })

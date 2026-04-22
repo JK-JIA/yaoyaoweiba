@@ -13,7 +13,7 @@ function getBrowserBase() {
   return trimmed.replace(/\/$/, "");
 }
 
-/** 仅服务端（SSR）请求：优先内网地址，避免 Docker 内误用 localhost */
+/** 仅服务端（SSR）请求：优先内网地址（如 Docker 中的 api:4000） */
 export function getServerApiBase() {
   const internal = process.env.API_INTERNAL_URL?.trim();
   if (internal) return internal.replace(/\/$/, "");

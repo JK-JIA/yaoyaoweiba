@@ -6,7 +6,9 @@ services:
       - "4000:4000"
     environment:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-yaoyaoweiba123}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      # 生产务必改为浏览器访问前台的完整 Origin，如 https://子域.你的域名.com（可逗号分隔多个）
+      FRONTEND_URL: ${FRONTEND_URL:-http://127.0.0.1:3000}
+      NODE_ENV: production
       DATA_DIR: /app/data
     volumes:
       - api_data:/app/data
@@ -20,6 +22,7 @@ services:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-}
         BACKEND_URL_FOR_PROXY: http://api:4000
         NEXT_PUBLIC_ADMIN_PASSWORD: ${ADMIN_PASSWORD:-yaoyaoweiba123}
+        NEXT_PUBLIC_BUILD_TAG: ${NEXT_PUBLIC_BUILD_TAG:-unknown}
     container_name: yaoyaoweiba-web
     ports:
       - "3000:3000"
