@@ -15,6 +15,10 @@ export const products: Product[] = [
     category: "dog-bed",
     price: "¥199",
     image: "https://images.unsplash.com/photo-1544568100-847a948585b9?auto=format&fit=crop&w=1200&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1544568100-847a948585b9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1598133894008-61f719fdb18e?auto=format&fit=crop&w=1200&q=80"
+    ],
     shortDescription: "加厚填充，包裹感强，适合中小型犬。",
     details: "采用亲肤短绒和高回弹填充，冬天保暖、夏季不闷。可拆洗外套设计，清洁维护更简单。",
     specs: ["S/M/L 三种尺寸", "可机洗外套", "防滑底布"],

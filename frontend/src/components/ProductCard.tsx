@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { useCart } from "@/hooks/useCart";
+import { getProductCoverImage } from "@/lib/products";
 import { Product } from "@/types/product";
 
 interface ProductCardProps {
@@ -12,7 +13,11 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   return (
     <article className="overflow-hidden rounded-2xl border border-amber-100 bg-white shadow-sm">
-      <img src={product.image} alt={product.name} className="h-52 w-full object-cover" />
+      <img
+        src={getProductCoverImage(product)}
+        alt={product.name}
+        className="h-52 w-full object-cover"
+      />
       <div className="space-y-3 p-5">
         <h3 className="text-lg font-semibold text-stone-800">{product.name}</h3>
         <p className="text-sm text-stone-600">{product.shortDescription}</p>

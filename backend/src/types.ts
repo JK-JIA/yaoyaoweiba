@@ -7,6 +7,7 @@ export interface Product {
   category: Category;
   price: string;
   image: string;
+  images?: string[];
   shortDescription: string;
   details: string;
   specs: string[];

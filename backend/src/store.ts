@@ -27,16 +27,31 @@ function ensureUniqueSlug(base: string, used: Set<string>) {
   return next;
 }
 
+function normalizeProductImages(item: Product): Pick<Product, "image" | "images"> {
+  const fromGallery =
+    Array.isArray(item.images) && item.images.length > 0
+      ? item.images.map((url) => (typeof url === "string" ? url.trim() : "")).filter(Boolean)
+      : [];
+  const single = typeof item.image === "string" ? item.image.trim() : "";
+  const merged = fromGallery.length > 0 ? fromGallery : single ? [single] : [];
+  const image = merged[0] || "";
+  const images = merged.length > 1 ? merged : undefined;
+  return { image, images };
+}
+
 function sanitizeProducts(input: Product[]): Product[] {
   const used = new Set<string>();
   return input.map((item, index) => {
     const fallbackName = item.name || `product-${index + 1}`;
     const slugBase = toSlug(item.slug || fallbackName);
     const slug = ensureUniqueSlug(slugBase || `product-${index + 1}`, used);
+    const { image, images } = normalizeProductImages(item);
     return {
       ...item,
       id: item.id || `${Date.now()}-${index}`,
-      slug
+      slug,
+      image,
+      images
     };
   });
 }

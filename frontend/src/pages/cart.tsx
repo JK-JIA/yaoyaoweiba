@@ -39,7 +39,9 @@ export default function CartPage() {
                   key={item.slug}
                   className="flex flex-col gap-4 rounded-2xl bg-white p-4 shadow-sm md:flex-row md:items-center"
                 >
-                  <img src={item.image} alt={item.name} className="h-24 w-24 rounded-xl object-cover" />
+                  <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-xl bg-stone-50">
+                    <img src={item.image} alt={item.name} className="max-h-full max-w-full object-contain" />
+                  </div>
                   <div className="flex-1">
                     <h2 className="font-semibold">{item.name}</h2>
                     <p className="text-sm text-brand-700">{item.price}</p>

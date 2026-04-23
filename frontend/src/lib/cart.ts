@@ -1,3 +1,4 @@
+import { getProductCoverImage } from "@/lib/products";
 import { Product } from "@/types/product";
 import { CartItem } from "@/types/cart";
 
@@ -36,7 +37,7 @@ export function toCartItem(product: Product): CartItem {
     slug: product.slug,
     name: product.name,
     price: product.price,
-    image: product.image,
+    image: getProductCoverImage(product),
     quantity: 1
   };
 }

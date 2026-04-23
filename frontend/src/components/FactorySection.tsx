@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { BRAND_MARK_SRC } from "@/lib/branding";
 
 export default function FactorySection() {
   return (
@@ -7,7 +8,7 @@ export default function FactorySection() {
         <div className="flex flex-wrap items-center gap-2">
           <p className="text-sm font-semibold uppercase tracking-wide text-brand-700">Factory & Quality</p>
           <Image
-            src="/images/home-doghouse.png"
+            src={BRAND_MARK_SRC}
             alt=""
             width={64}
             height={64}

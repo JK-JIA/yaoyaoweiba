@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { Category, Product } from "@/types/product";
+import { getProductImages } from "@/lib/products";
 
 export interface ProductInput {
   name: string;
   slug: string;
   category: Category;
   price: string;
-  image: string;
+  images: string[];
   shortDescription: string;
   details: string;
   specsText: string;
@@ -24,7 +25,7 @@ const emptyValue: ProductInput = {
   slug: "",
   category: "dog-bed",
   price: "¥0",
-  image: "",
+  images: [],
   shortDescription: "",
   details: "",
   specsText: "",
@@ -38,7 +39,7 @@ function normalizeValue(product?: Product): ProductInput {
     slug: product.slug,
     category: product.category,
     price: product.price,
-    image: product.image,
+    images: getProductImages(product),
     shortDescription: product.shortDescription,
     details: product.details,
     specsText: product.specs.join("\n"),
@@ -61,7 +62,7 @@ function fileToDataUrl(file: File): Promise<string> {
   });
 }
 
-function loadImage(dataUrl: string): Promise<HTMLImageElement> {
+function loadImageElement(dataUrl: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
     image.onload = () => resolve(image);
@@ -72,7 +73,7 @@ function loadImage(dataUrl: string): Promise<HTMLImageElement> {
 
 async function compressImage(file: File): Promise<string> {
   const sourceDataUrl = await fileToDataUrl(file);
-  const image = await loadImage(sourceDataUrl);
+  const image = await loadImageElement(sourceDataUrl);
   const canvas = document.createElement("canvas");
   const maxEdge = 960;
   const scale = Math.min(1, maxEdge / Math.max(image.width, image.height));
@@ -95,26 +96,45 @@ async function compressImage(file: File): Promise<string> {
 export default function ProductForm({ initialValue, onSubmit, onCancel }: ProductFormProps) {
   const [form, setForm] = useState<ProductInput>(normalizeValue(initialValue));
   const [uploadTip, setUploadTip] = useState("");
+  const [linkDraft, setLinkDraft] = useState("");
   const title = useMemo(() => (initialValue ? "编辑商品" : "新增商品"), [initialValue]);
 
   useEffect(() => {
     setForm(normalizeValue(initialValue));
     setUploadTip("");
+    setLinkDraft("");
   }, [initialValue]);
 
-  const handleChange = (key: keyof ProductInput, value: string) => {
+  const handleChange = (key: keyof Omit<ProductInput, "images">, value: string) => {
     setForm((previous) => ({ ...previous, [key]: value }));
   };
 
-  const handleFileUpload = async (file?: File) => {
-    if (!file) return;
+  const setImages = (next: string[]) => {
+    setForm((previous) => ({ ...previous, images: next }));
+  };
+
+  const handleFilesUpload = async (files: FileList | null) => {
+    if (!files?.length) return;
+    const list = Array.from(files);
     try {
-      const compressed = await compressImage(file);
-      handleChange("image", compressed);
-      setUploadTip(`已上传并压缩：${file.name}`);
+      const compressed = await Promise.all(list.map((file) => compressImage(file)));
+      setForm((previous) => ({ ...previous, images: [...previous.images, ...compressed] }));
+      setUploadTip(`已上传并压缩 ${list.length} 张图片（保持各自比例）。`);
     } catch {
       setUploadTip("图片读取失败，请重试。");
     }
+  };
+
+  const addLink = () => {
+    const url = linkDraft.trim();
+    if (!url) return;
+    setForm((previous) => ({ ...previous, images: [...previous.images, url] }));
+    setLinkDraft("");
+    setUploadTip("已添加图片链接。");
+  };
+
+  const removeImageAt = (index: number) => {
+    setForm((previous) => ({ ...previous, images: previous.images.filter((_, i) => i !== index) }));
   };
 
   return (
@@ -123,7 +143,7 @@ export default function ProductForm({ initialValue, onSubmit, onCancel }: Produc
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         <input className="rounded-lg border p-2" placeholder="商品名称" value={form.name} onChange={(event) => handleChange("name", event.target.value)} />
         <input className="rounded-lg border p-2" placeholder="slug（可不填，将自动生成）" value={form.slug} onChange={(event) => handleChange("slug", event.target.value)} />
-        <select className="rounded-lg border p-2" value={form.category} onChange={(event) => handleChange("category", event.target.value)}>
+        <select className="rounded-lg border p-2" value={form.category} onChange={(event) => handleChange("category", event.target.value as Category)}>
           <option value="dog-bed">狗窝</option>
           <option value="bowl">饭碗</option>
           <option value="dog-food">狗粮</option>
@@ -131,23 +151,52 @@ export default function ProductForm({ initialValue, onSubmit, onCancel }: Produc
         </select>
         <input className="rounded-lg border p-2" placeholder="价格（如 ¥199）" value={form.price} onChange={(event) => handleChange("price", event.target.value)} />
       </div>
-      <input className="mt-3 w-full rounded-lg border p-2" placeholder="图片链接" value={form.image} onChange={(event) => handleChange("image", event.target.value)} />
+
+      <p className="mt-3 text-sm text-stone-600">商品图片（可多张，首张为列表封面）</p>
+      <div className="mt-2 flex flex-wrap gap-2">
+        <input
+          className="min-w-[12rem] flex-1 rounded-lg border p-2"
+          placeholder="粘贴图片链接后点击添加"
+          value={linkDraft}
+          onChange={(event) => setLinkDraft(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              addLink();
+            }
+          }}
+        />
+        <button type="button" onClick={addLink} className="rounded-lg border border-brand-500 px-3 py-2 text-sm font-semibold text-brand-700 hover:bg-brand-50">
+          添加链接
+        </button>
+      </div>
       <label className="mt-3 block rounded-lg border border-dashed border-amber-300 p-3 text-sm text-stone-600">
-        本地上传图片（纯前端存储）
+        本地上传图片（可多选，纯前端存储；按原图比例压缩边长，不强制裁切）
         <input
           type="file"
           accept="image/*"
+          multiple
           className="mt-2 block w-full text-sm"
-          onChange={(event) => handleFileUpload(event.target.files?.[0])}
+          onChange={(event) => void handleFilesUpload(event.target.files)}
         />
       </label>
       {uploadTip && <p className="mt-2 text-xs text-stone-500">{uploadTip}</p>}
-      {form.image && (
-        <img
-          src={form.image}
-          alt="商品预览图"
-          className="mt-3 h-28 w-28 rounded-lg border object-cover"
-        />
+      {form.images.length > 0 && (
+        <ul className="mt-3 flex flex-wrap gap-2">
+          {form.images.map((src, index) => (
+            <li key={`${index}-${src.slice(0, 24)}`} className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-lg border bg-stone-50">
+              <img src={src} alt="" className="max-h-full max-w-full object-contain" />
+              <button
+                type="button"
+                onClick={() => removeImageAt(index)}
+                className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-stone-800 text-xs text-white hover:bg-red-600"
+                aria-label="移除图片"
+              >
+                ×
+              </button>
+            </li>
+          ))}
+        </ul>
       )}
       <textarea className="mt-3 w-full rounded-lg border p-2" rows={2} placeholder="摘要" value={form.shortDescription} onChange={(event) => handleChange("shortDescription", event.target.value)} />
       <textarea className="mt-3 w-full rounded-lg border p-2" rows={3} placeholder="详情" value={form.details} onChange={(event) => handleChange("details", event.target.value)} />

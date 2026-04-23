@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/hooks/useCart";
+import { BRAND_MARK_SRC } from "@/lib/branding";
 
 const navItems = [
   { href: "/", label: "首页" },
@@ -25,8 +26,8 @@ export default function Header() {
         >
           <span>摇摇尾巴</span>
           <Image
-            src="/images/brand-logo.png"
-            alt=""
+            src={BRAND_MARK_SRC}
+            alt="摇摇小尾巴"
             width={40}
             height={40}
             className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-amber-200/70 sm:h-10 sm:w-10"
