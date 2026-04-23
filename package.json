@@ -1,0 +1,9 @@
+{
+  "name": "yaoyaoweiba-repo",
+  "private": true,
+  "scripts": {
+    "clean": "node scripts/clean-build.mjs",
+    "clean:artifacts": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/prune-heavy-folders.ps1 -BuildArtifactsOnly",
+    "clean:deps": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/prune-heavy-folders.ps1"
+  }
+}

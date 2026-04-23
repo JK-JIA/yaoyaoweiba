@@ -2,9 +2,21 @@
 node_modules/
 .next/
 dist/
+out/
 
 # 仓库根误生成的缓存（勿在根目录 npm install）
 /.npm-cache/
+
+# 工具链缓存
+.turbo/
+*.tsbuildinfo
+.eslintcache
+coverage/
+.nyc_output/
+
+# 本地 / 部署
+.vercel/
+.DS_Store
 
 .env
 *.log
