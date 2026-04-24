@@ -73,7 +73,7 @@ export default function CategoryPage() {
         />
       </section>
       <section className="container-main pb-12 pt-2">
-        <h1 className="text-3xl font-bold">{meta.name}</h1>
+        <h1 className="text-2xl font-bold sm:text-3xl">{meta.name}</h1>
         <p className="mt-3 text-stone-600">{meta.description}</p>
         {categoryProducts.length === 0 ? (
           <p className="mt-8 text-center text-stone-600">该品类暂无商品。</p>

@@ -75,7 +75,7 @@ export default function ProductDetailPage() {
         onIndexChange={setLightboxIndex}
       />
       <section className="container-main py-12">
-        <div className="grid gap-8 rounded-3xl bg-white p-6 shadow-sm md:grid-cols-2">
+        <div className="grid gap-6 rounded-3xl bg-white p-4 shadow-sm sm:p-6 md:grid-cols-2 md:gap-8">
           <div className="min-w-0">
             <button
               type="button"
@@ -83,7 +83,7 @@ export default function ProductDetailPage() {
               className="group relative block w-full cursor-zoom-in overflow-hidden rounded-2xl outline-none ring-brand-400 focus-visible:ring-2"
               aria-label="点击放大查看商品图"
             >
-              <div className="flex h-80 w-full items-center justify-center rounded-2xl bg-stone-50">
+              <div className="flex h-[min(22rem,58vh)] min-h-[14rem] w-full items-center justify-center rounded-2xl bg-stone-50 sm:min-h-[16rem] md:h-80 md:min-h-0">
                 <img
                   src={mainSrc}
                   alt={product.name}
@@ -113,8 +113,8 @@ export default function ProductDetailPage() {
             )}
           </div>
           <div className="min-w-0">
-            <h1 className="text-3xl font-bold">{product.name}</h1>
-            <p className="mt-3 text-2xl font-semibold text-brand-700">{product.price}</p>
+            <h1 className="text-2xl font-bold sm:text-3xl">{product.name}</h1>
+            <p className="mt-3 text-xl font-semibold text-brand-700 sm:text-2xl">{product.price}</p>
             <p className="mt-4 text-stone-600">{product.details}</p>
             <p className="mt-4 text-sm text-stone-700">
               <span className="font-semibold">适用犬型：</span>
@@ -129,13 +129,13 @@ export default function ProductDetailPage() {
               <button
                 type="button"
                 onClick={() => addItem(product)}
-                className="rounded-full border border-brand-500 px-5 py-3 font-semibold text-brand-700 hover:bg-brand-50"
+                className="min-h-[44px] rounded-full border border-brand-500 px-5 py-3 font-semibold text-brand-700 hover:bg-brand-50"
               >
                 加入购物车
               </button>
               <Link
                 href="/contact"
-                className="inline-block rounded-full bg-brand-500 px-5 py-3 font-semibold text-white hover:bg-brand-700"
+                className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-brand-500 px-5 py-3 font-semibold text-white hover:bg-brand-700"
               >
                 咨询购买
               </Link>

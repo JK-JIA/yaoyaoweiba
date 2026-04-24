@@ -8,8 +8,8 @@ export default function AboutPage() {
         <meta name="description" content="了解摇摇尾巴品牌故事、品质承诺与售后服务理念。" />
       </Head>
       <section className="container-main py-12">
-        <h1 className="text-3xl font-bold">关于摇摇尾巴</h1>
-        <div className="mt-6 space-y-4 rounded-2xl bg-white p-6 text-stone-700 shadow-sm">
+        <h1 className="text-2xl font-bold sm:text-3xl">关于摇摇尾巴</h1>
+        <div className="mt-6 space-y-4 rounded-2xl bg-white p-5 text-stone-700 shadow-sm sm:p-6">
           <p>
             摇摇尾巴是一家专注宠物犬生活用品的品牌，围绕“休息、喂养、奖励”三大场景，
             甄选高频刚需产品，帮助养宠家庭更轻松地照顾毛孩子。

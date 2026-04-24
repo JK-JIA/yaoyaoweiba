@@ -16,10 +16,10 @@ export default function ProductCard({ product }: ProductCardProps) {
       <img
         src={getProductCoverImage(product)}
         alt={product.name}
-        className="h-52 w-full object-cover"
+        className="h-44 w-full object-cover sm:h-52"
       />
-      <div className="space-y-3 p-5">
-        <h3 className="text-lg font-semibold text-stone-800">{product.name}</h3>
+      <div className="space-y-3 p-4 sm:p-5">
+        <h3 className="text-base font-semibold text-stone-800 sm:text-lg">{product.name}</h3>
         <p className="text-sm text-stone-600">{product.shortDescription}</p>
         <div className="space-y-3">
           <span className="font-semibold text-brand-700">{product.price}</span>
@@ -27,14 +27,14 @@ export default function ProductCard({ product }: ProductCardProps) {
             <button
               type="button"
               onClick={() => addItem(product)}
-              className="w-full rounded-full border border-brand-500 px-2 py-2 text-xs font-semibold text-brand-700 hover:bg-brand-50 sm:text-sm"
+              className="flex min-h-[44px] w-full items-center justify-center rounded-full border border-brand-500 px-2 py-2 text-xs font-semibold text-brand-700 hover:bg-brand-50 sm:text-sm"
             >
               加入购物车
             </button>
             <Link
               href={detailHref}
               aria-disabled={!product.slug}
-              className="w-full rounded-full bg-brand-500 px-2 py-2 text-center text-xs font-semibold text-white hover:bg-brand-700 sm:text-sm"
+              className="flex min-h-[44px] w-full items-center justify-center rounded-full bg-brand-500 px-2 py-2 text-center text-xs font-semibold text-white hover:bg-brand-700 sm:text-sm"
             >
               查看详情
             </Link>

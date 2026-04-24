@@ -42,7 +42,7 @@ export default function ProductSearchField({
           placeholder={placeholder}
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="w-full rounded-full border border-amber-200/80 bg-white py-3 pl-10 pr-20 text-stone-800 shadow-sm outline-none ring-brand-500/30 placeholder:text-stone-400 focus:border-brand-400 focus:ring-2"
+          className="w-full rounded-full border border-amber-200/80 bg-white py-3 pl-10 pr-20 text-base text-stone-800 shadow-sm outline-none ring-brand-500/30 placeholder:text-stone-400 focus:border-brand-400 focus:ring-2 sm:text-sm"
         />
         {active && (
           <button

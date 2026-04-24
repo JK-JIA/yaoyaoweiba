@@ -11,7 +11,7 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen">
       <Header />
-      <main>{children}</main>
+      <main className="pb-24 md:pb-0">{children}</main>
       <Footer />
       <FloatingCart />
     </div>

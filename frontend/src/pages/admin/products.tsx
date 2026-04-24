@@ -189,7 +189,7 @@ export default function AdminProductsPage() {
             </p>
           </details>
 
-          <div className="mt-10 rounded-2xl border border-amber-100/80 bg-white p-5 shadow-sm">
+          <div className="mt-10 min-w-0 rounded-2xl border border-amber-100/80 bg-white p-4 shadow-sm sm:p-5">
             <div className="flex items-center justify-between gap-3 border-b border-stone-100 pb-3">
               <h2 className="text-lg font-semibold text-stone-900">当前商品列表</h2>
               <span className="text-sm text-stone-500">共 {products.length} 件</span>
@@ -205,8 +205,8 @@ export default function AdminProductsPage() {
                     />
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold text-stone-900">{item.name}</p>
-                      <p className="mt-0.5 text-sm text-stone-600">
-                        {item.price} · <span className="font-mono text-stone-500">{item.slug}</span>
+                      <p className="mt-0.5 break-words text-sm text-stone-600">
+                        {item.price} · <span className="break-all font-mono text-stone-500">{item.slug}</span>
                       </p>
                     </div>
                     <div className="flex shrink-0 gap-2">

@@ -12,13 +12,13 @@ export default function CartPage() {
         <meta name="description" content="查看已选商品并完成结算确认。" />
       </Head>
       <section className="container-main py-12">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">购物车</h1>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-2xl font-bold sm:text-3xl">购物车</h1>
           {items.length > 0 && (
             <button
               type="button"
               onClick={clearCart}
-              className="rounded-full border border-red-300 px-4 py-2 text-sm text-red-600"
+              className="min-h-[44px] self-start rounded-full border border-red-300 px-4 py-2 text-sm text-red-600 sm:self-auto"
             >
               清空购物车
             </button>
@@ -50,15 +50,17 @@ export default function CartPage() {
                     <button
                       type="button"
                       onClick={() => updateQuantity(item.slug, item.quantity - 1)}
-                      className="rounded-full border px-3 py-1"
+                      className="flex h-11 min-w-[44px] items-center justify-center rounded-full border px-3 text-lg leading-none"
+                      aria-label="减少数量"
                     >
                       -
                     </button>
-                    <span>{item.quantity}</span>
+                    <span className="min-w-[2ch] text-center tabular-nums">{item.quantity}</span>
                     <button
                       type="button"
                       onClick={() => updateQuantity(item.slug, item.quantity + 1)}
-                      className="rounded-full border px-3 py-1"
+                      className="flex h-11 min-w-[44px] items-center justify-center rounded-full border px-3 text-lg leading-none"
+                      aria-label="增加数量"
                     >
                       +
                     </button>
@@ -73,13 +75,16 @@ export default function CartPage() {
                 </article>
               ))}
             </div>
-            <aside className="h-fit rounded-2xl bg-white p-6 shadow-sm">
+            <aside className="h-fit rounded-2xl bg-white p-5 shadow-sm sm:p-6">
               <h3 className="text-lg font-semibold">结算信息</h3>
               <p className="mt-4 text-stone-600">
-                合计：<span className="text-2xl font-bold text-brand-700">¥{totalPrice.toFixed(2)}</span>
+                合计：<span className="text-xl font-bold text-brand-700 sm:text-2xl">¥{totalPrice.toFixed(2)}</span>
               </p>
               <p className="mt-2 text-xs text-stone-500">当前为前端结算演示版本，支付功能后续接入。</p>
-              <Link href="/contact" className="mt-4 inline-block w-full rounded-full bg-brand-500 py-3 text-center text-white">
+              <Link
+                href="/contact"
+                className="mt-4 inline-flex min-h-[48px] w-full items-center justify-center rounded-full bg-brand-500 py-3 text-center font-semibold text-white"
+              >
                 去结算（咨询下单）
               </Link>
             </aside>

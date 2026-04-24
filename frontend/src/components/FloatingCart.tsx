@@ -7,9 +7,15 @@ export default function FloatingCart() {
   const { items, totalCount, totalPrice, updateQuantity } = useCart();
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div
+      className="fixed z-50"
+      style={{
+        bottom: "max(1.25rem, env(safe-area-inset-bottom, 0px))",
+        right: "max(1.25rem, env(safe-area-inset-right, 0px))"
+      }}
+    >
       {open && (
-        <div className="mb-3 w-80 rounded-2xl border border-amber-100 bg-white p-4 shadow-xl">
+        <div className="mb-3 w-[min(20rem,calc(100vw-1.5rem))] max-w-[calc(100vw-2rem)] rounded-2xl border border-amber-100 bg-white p-4 shadow-xl">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-stone-800">购物车状态</h3>
             <button
@@ -71,7 +77,7 @@ export default function FloatingCart() {
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="relative h-14 w-14 rounded-full bg-brand-500 text-2xl text-white shadow-lg hover:bg-brand-700"
+        className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-500 text-2xl text-white shadow-lg hover:bg-brand-700"
         aria-label="打开购物车状态"
       >
         🛒

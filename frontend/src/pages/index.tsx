@@ -61,9 +61,9 @@ export default function HomePage() {
         />
       </section>
       <section className="container-main pb-14 pt-2">
-        <div className="rounded-3xl bg-white p-10 shadow-sm">
+        <div className="rounded-3xl bg-white p-6 shadow-sm sm:p-8 md:p-10">
           <p className="text-sm font-semibold uppercase tracking-wide text-brand-700">YaoYaoWeiBa</p>
-          <h1 className="mt-3 text-4xl font-bold text-stone-800">安心喂养，舒适陪伴，精选品质</h1>
+          <h1 className="mt-3 text-3xl font-bold text-stone-800 sm:text-4xl">安心喂养，舒适陪伴，精选品质</h1>
           <p className="mt-4 max-w-2xl text-stone-600">
             摇摇尾巴专注宠物狗用品，为每一位毛孩子带来更舒适的休息、更科学的喂养与更健康的奖励体验。
           </p>
@@ -81,7 +81,7 @@ export default function HomePage() {
       {searchActive && (
         <section className="container-main pb-12" aria-live="polite">
           <div className="mb-5 flex flex-wrap items-end justify-between gap-3 border-b border-amber-100/80 pb-3">
-            <h2 className="text-2xl font-bold">搜索结果</h2>
+            <h2 className="text-xl font-bold sm:text-2xl">搜索结果</h2>
             <p className="text-sm text-stone-600">
               共 {searchResults.length} 件
               {searchResults.length === 0 && " · 试试其它词，或清空搜索浏览分类"}
@@ -106,7 +106,7 @@ export default function HomePage() {
           <section key={category} className="container-main pb-12">
             <div className="mb-5 flex flex-wrap items-end justify-between gap-3 border-b border-amber-100/80 pb-3">
               <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                <h2 className="text-2xl font-bold">{meta.name}</h2>
+                <h2 className="text-xl font-bold sm:text-2xl">{meta.name}</h2>
                 <Image
                   src={BRAND_MARK_SRC}
                   alt=""

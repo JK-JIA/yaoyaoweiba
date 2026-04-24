@@ -65,7 +65,7 @@ export default function ImagePreviewLightbox({
 
   return (
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/85 p-4 md:p-8"
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/85 p-4 pt-[max(1rem,env(safe-area-inset-top,0px))] pb-[max(1.5rem,env(safe-area-inset-bottom,0px))] pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] md:p-8"
       role="dialog"
       aria-modal="true"
       aria-label="图片预览"
@@ -117,7 +117,7 @@ export default function ImagePreviewLightbox({
       <img
         src={src}
         alt={alt}
-        className="max-h-[90vh] max-w-full object-contain shadow-2xl"
+        className="max-h-[min(90vh,90dvh)] max-w-full object-contain shadow-2xl"
         onClick={(event) => event.stopPropagation()}
       />
     </div>
