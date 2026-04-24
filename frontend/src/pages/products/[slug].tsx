@@ -131,12 +131,40 @@ export default function ProductDetailPage() {
                   className="pointer-events-none max-h-full max-w-full object-contain"
                 />
               </div>
-              <span className="pointer-events-none absolute bottom-3 right-3 rounded-full bg-black/55 px-2.5 py-1 text-xs text-white opacity-90 md:opacity-0 md:transition md:group-hover:opacity-100">
+              <span className="pointer-events-none absolute bottom-2.5 right-2.5 rounded-full bg-black/50 px-2 py-0.5 text-[10px] leading-tight text-white/95 opacity-90 md:bottom-3 md:right-3 md:opacity-0 md:transition md:group-hover:opacity-100">
                 点击放大
               </span>
             </button>
             {gallery.length > 1 && (
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div
+                className="mt-3 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2"
+                role="tablist"
+                aria-label="商品图轮播位置"
+              >
+                {gallery.map((_, index) => (
+                  <button
+                    key={`dot-${index}`}
+                    type="button"
+                    role="tab"
+                    aria-selected={index === activeImage}
+                    aria-label={`第 ${index + 1} 张，共 ${gallery.length} 张`}
+                    onClick={() => setActiveImage(index)}
+                    className="flex h-10 min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-stone-400 hover:bg-amber-50/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                  >
+                    <span
+                      className={`block rounded-full transition ${
+                        index === activeImage
+                          ? "h-2.5 w-2.5 bg-brand-500 shadow-sm ring-2 ring-brand-200/90"
+                          : "h-2 w-2 bg-stone-300 hover:bg-stone-400"
+                      }`}
+                      aria-hidden
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+            {gallery.length > 1 && (
+              <div className="mt-2 flex flex-wrap gap-2 sm:mt-3">
                 {gallery.map((src, index) => (
                   <button
                     key={`${index}-${src.slice(0, 48)}`}

@@ -11,13 +11,27 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
   const detailHref = product.slug ? `/products/${product.slug}` : "#";
 
+  const cover = (
+    <img
+      src={getProductCoverImage(product)}
+      alt={product.name}
+      className="h-44 w-full object-cover transition hover:opacity-95 sm:h-52"
+    />
+  );
+
   return (
     <article className="overflow-hidden rounded-2xl border border-amber-100 bg-white shadow-sm">
-      <img
-        src={getProductCoverImage(product)}
-        alt={product.name}
-        className="h-44 w-full object-cover sm:h-52"
-      />
+      {product.slug ? (
+        <Link
+          href={detailHref}
+          className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-inset"
+          aria-label={`查看 ${product.name} 详情`}
+        >
+          {cover}
+        </Link>
+      ) : (
+        cover
+      )}
       <div className="space-y-3 p-4 sm:p-5">
         <h3 className="text-base font-semibold text-stone-800 sm:text-lg">{product.name}</h3>
         <p className="text-sm text-stone-600">{product.shortDescription}</p>
