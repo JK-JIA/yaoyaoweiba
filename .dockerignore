@@ -1,4 +1,4 @@
-# 缩小根 context 构建（如 github-webhook 镜像）上传体积；子目录 build 仍各自使用子目录 context。
+# 缩小根 context 上传体积；子目录 build 仍各自使用子目录 context。
 .git
 **/node_modules
 **/.next
@@ -7,5 +7,4 @@
 *.log
 logs
 .env
-.env.webhook
 yaoyaoweiba-site-deploy-*.zip
