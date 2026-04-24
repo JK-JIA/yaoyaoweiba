@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # 在服务器项目根目录执行：拉代码并无缓存重建（否则浏览器仍是旧 JS）
+# GitHub Webhook 使用独立 compose：deploy/webhook/，本脚本不构建/启动 webhook。
 set -euo pipefail
 cd "$(dirname "$0")/.."
 git pull

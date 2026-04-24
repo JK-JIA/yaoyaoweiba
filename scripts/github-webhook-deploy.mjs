@@ -2,7 +2,7 @@
 /**
  * GitHub Webhook → 异步执行 scripts/deploy-update.sh（方案二）
  *
- * 环境变量（可用 .env.webhook + systemd EnvironmentFile 加载）：
+ * 环境变量（推荐 deploy/webhook/.env.webhook + systemd EnvironmentFile 加载）：
  *   GITHUB_WEBHOOK_SECRET  必填，与 GitHub Webhook 里填的 Secret 一致
  *   GITHUB_WEBHOOK_PORT    默认 8787
  *   GITHUB_WEBHOOK_HOST    默认 127.0.0.1（仅本机；前面用 Nginx 反代 TLS）

@@ -72,101 +72,6 @@ docker compose build web && docker compose up -d
 
 若仍异常，可强制无缓存构建：`docker compose build --no-cache web && docker compose up -d`
 
-## GitHub Webhook 自动部署（阿里云 Ubuntu，方案二）
-
-推送 `main` 后由 GitHub 调用你服务器上的 HTTPS 地址，本机进程校验签名后**后台**执行 `scripts/deploy-update.sh`（先返回 202，避免 GitHub 10 秒超时）。
-
-### 公网 IP 能否不写域名
-
-- **不能只写 `http://公网IP/...`**：在 github.com 上添加 Webhook 时，一般**必须使用 HTTPS**（HTTP 公网地址通常无法通过或会被拒）。
-- **`https://公网IP/...` 可以填进 GitHub**，但浏览器/GitHub 会校验证书：公网受信任 CA **几乎不给裸 IP 签发证书**，所以实际很难比「**域名 A 记录 → 你的 IP + Let’s Encrypt**」更简单。
-- **仅临时测试**：可对 IP 做自签 HTTPS，并在 GitHub Webhook 里**关闭 SSL verification**（不安全，不建议生产）。
-
-### 如何启动 webhook 进程
-
-**推荐：Docker 容器（无需在宿主机安装 Node）**
-
-1. 项目根已有 `docker-compose.yml` 中的 **`github-webhook`** 服务（`profiles: webhook`）。在根目录 **`.env`** 增加一行（与 `.env.webhook` 并列，勿混进 Docker 业务变量也可）：
-
-   ```env
-   COMPOSE_PROFILES=webhook
-   ```
-
-   这样之后执行 `scripts/deploy-update.sh` 里的 `docker compose up -d` 时，会一并保持 Webhook 容器运行。
-
-2. 复制并编辑 **`/.env.webhook`**（与 README 上文「密钥与配置」一致）。
-
-3. 构建并启动 Webhook 容器：
-
-   ```bash
-   cd /path/to/yaoyaoweiba-site
-   docker compose --profile webhook build github-webhook
-   docker compose --profile webhook up -d github-webhook
-   ```
-
-4. 默认把容器 **8787** 映射到宿主机 **`127.0.0.1:8787`**（可用环境变量 `GITHUB_WEBHOOK_BIND` 改成 `0.0.0.0`，仍建议前面用 Nginx 做 HTTPS）。健康检查：`curl -sS http://127.0.0.1:8787/health`。
-
-5. **安全说明**：容器挂载了 **`/var/run/docker.sock`**，Webhook 进程可调用宿主 Docker（与 `deploy-update.sh` 行为一致），等价于高权限；请保证 **Secret** 足够强，且 **不要**把未鉴权的 8787 暴露到公网。
-
-**备选：宿主机直接跑 Node（需 Node 18+）**
-
-```bash
-cd /path/to/yaoyaoweiba-site
-set -a && source .env.webhook && set +a
-node scripts/github-webhook-deploy.mjs
-```
-
-**备选：systemd 常驻 Node**（见下文第 4 节）：[`scripts/github-webhook-deploy.service`](scripts/github-webhook-deploy.service)。
-
-公网访问仍由 **Nginx 443 HTTPS** 反代到 **`127.0.0.1:8787`**（或你设置的 `GITHUB_WEBHOOK_BIND`）。
-
-### 1. 服务器准备
-
-- 已 `git clone` 本仓库，且 `docker compose`、`.env` 可正常手动部署。
-- 使用 **Webhook 容器**时，宿主机**不必**安装 Node；若不用容器，则需 **Node.js 18+**。
-- 建议专用用户（如 `deploy`），对项目目录有读写权；宿主机直接跑 `deploy-update.sh` 时用户需在 **docker** 组内。
-
-### 2. Webhook 密钥与配置
-
-```bash
-cd /path/to/yaoyaoweiba-site
-cp scripts/env.webhook.example .env.webhook
-# 编辑 .env.webhook：务必设置 GITHUB_WEBHOOK_SECRET（长随机串）
-# 可选 GITHUB_WEBHOOK_REPO=你的GitHub用户名/仓库名 防止误触
-```
-
-### 3. Nginx 对外 HTTPS
-
-将 [`scripts/nginx-webhook-snippet.conf`](scripts/nginx-webhook-snippet.conf) 中的 `location` 块加入你已有 **HTTPS** 的 `server { }`（域名证书建议 Let’s Encrypt）。`proxy_pass` 指向 **`http://127.0.0.1:8787`**（与 compose 默认映射一致；若改了 `GITHUB_WEBHOOK_BIND` 或端口，需同步修改）。
-
-### 4. systemd 常驻
-
-把 [`scripts/github-webhook-deploy.service`](scripts/github-webhook-deploy.service) 里的路径、用户改成你的，再：
-
-```bash
-sudo cp scripts/github-webhook-deploy.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable --now github-webhook-deploy
-sudo systemctl status github-webhook-deploy
-```
-
-进程默认只监听 **127.0.0.1**，由 Nginx 反代，不直接把 Node 暴露到公网。
-
-### 5. 在 GitHub 添加 Webhook
-
-仓库 **Settings → Webhooks → Add webhook**：
-
-- **Payload URL**：`https://你的域名/github/webhook`（与 `GITHUB_WEBHOOK_PATH` 一致）
-- **Content type**：`application/json`
-- **Secret**：与 `GITHUB_WEBHOOK_SECRET` **完全一致**
-- **Events**：仅 **Just the push event**（或 Individual events 里勾选 push）
-
-保存后可用 **Redeliver** 测一次；非 `main` 的 push 会返回 `ignored`；成功触发部署时响应 **`accepted`**（202），详细日志在仓库目录 `logs/webhook-deploy.log`。
-
-### 6. 与 GitHub Actions SSH 部署的关系
-
-若仓库里启用了 [`.github/workflows/deploy-aliyun.yml`](.github/workflows/deploy-aliyun.yml)（SSH 方案），可与 Webhook **二选一**或并存（会重复构建）；仅用 Webhook 时建议把该 workflow 改为仅 `workflow_dispatch` 或删除。
-
 - 前端（宿主机）：**`http://127.0.0.1:3000`**（页面内请求走 **同域 `/api`**，由 Next 反代到 `api` 容器）  
 - 后端（宿主机直连调试用）：**`http://127.0.0.1:4000`**  
 - 商品数据卷：`api_data`（容器内 `/app/data`）
@@ -184,6 +89,58 @@ FRONTEND_URL=https://你的实际域名
 使用 Nginx 时：`/api` 交给 Next（由容器内 rewrites 转发）或 **`/api` 直接反代到后端** 均可；**切勿**在公网前端构建里把 `NEXT_PUBLIC_API_URL` 写成指向访客本机的回环地址。
 
 `docker compose` 会使用 `ADMIN_PASSWORD` 作为前端镜像构建参数 `NEXT_PUBLIC_ADMIN_PASSWORD`，保证登录校验与保存接口一致。
+
+## GitHub Webhook 自动部署（阿里云 Ubuntu，方案二）
+
+推送 `main` 后由 GitHub 调用你服务器上的 HTTPS 地址，本机进程校验签名后**后台**执行 `scripts/deploy-update.sh`（先返回 202，避免 GitHub 10 秒超时）。
+
+### 独立目录（与主栈分离）
+
+Webhook 使用 **[`deploy/webhook/`](deploy/webhook/)** 下单独的 `docker-compose.yml`，与仓库根目录的 **`web` / `api` 主 compose 分离**。这样执行 `scripts/deploy-update.sh` 时**只会**构建/拉起 `web`、`api`，**不会**顺带构建或等待 Webhook，耗时更可控。
+
+说明与命令见 **[`deploy/webhook/README.md`](deploy/webhook/README.md)**；环境变量模板：**[`deploy/webhook/env.example`](deploy/webhook/env.example)**（复制为同目录 `.env.webhook`）。
+
+### 公网 IP 能否不写域名
+
+- **不能只写 `http://公网IP/...`**：在 github.com 上添加 Webhook 时，一般**必须使用 HTTPS**（HTTP 公网地址通常无法通过或会被拒）。
+- **`https://公网IP/...` 可以填进 GitHub**，但浏览器/GitHub 会校验证书：公网受信任 CA **几乎不给裸 IP 签发证书**，所以实际很难比「**域名 A 记录 → 你的 IP + Let’s Encrypt**」更简单。
+- **仅临时测试**：可对 IP 做自签 HTTPS，并在 GitHub Webhook 里**关闭 SSL verification**（不安全，不建议生产）。
+
+### 启动方式（Docker 推荐）
+
+```bash
+cd deploy/webhook
+cp env.example .env.webhook
+# 编辑 .env.webhook（至少 GITHUB_WEBHOOK_SECRET）
+docker compose build
+docker compose up -d
+curl -sS http://127.0.0.1:8787/health
+```
+
+**systemd（Docker）**：将 [`scripts/github-webhook-deploy.service`](scripts/github-webhook-deploy.service) 中 `WorkingDirectory` 改为你的仓库路径下的 `deploy/webhook`，再 `systemctl enable --now`（`ExecStart` 使用 `docker compose up github-webhook` 前台运行，便于自动重启）。
+
+**备选：宿主机直接跑 Node（需 Node 18+）**：在仓库根 `set -a && source deploy/webhook/.env.webhook && set +a && node scripts/github-webhook-deploy.mjs`。unit 示例见 [`scripts/github-webhook-deploy.node.service.example`](scripts/github-webhook-deploy.node.service.example)。
+
+**安全**：Webhook 容器挂载 **`/var/run/docker.sock`**，等同高权限操作宿主 Docker；**Secret** 须足够强，**8787** 建议只给本机 + Nginx，勿对公网裸暴露。
+
+### Nginx 对外 HTTPS
+
+将 [`deploy/webhook/nginx-snippet.conf`](deploy/webhook/nginx-snippet.conf) 中的 `location` 块加入你已有 **HTTPS** 的 `server { }`（域名证书建议 Let’s Encrypt）。`proxy_pass` 指向 **`http://127.0.0.1:8787`**（与 `deploy/webhook/docker-compose.yml` 默认端口映射一致）。
+
+### 在 GitHub 添加 Webhook
+
+仓库 **Settings → Webhooks → Add webhook**：
+
+- **Payload URL**：`https://你的域名/github/webhook`（与 `GITHUB_WEBHOOK_PATH` 一致）
+- **Content type**：`application/json`
+- **Secret**：与 `GITHUB_WEBHOOK_SECRET` **完全一致**
+- **Events**：仅 **Just the push event**（或 Individual events 里勾选 push）
+
+保存后可用 **Redeliver** 测一次；非 `main` 的 push 会返回 `ignored`；成功触发部署时响应 **`accepted`**（202），详细日志在仓库目录 `logs/webhook-deploy.log`。
+
+### 与 GitHub Actions SSH 部署的关系
+
+若仓库里启用了 [`.github/workflows/deploy-aliyun.yml`](.github/workflows/deploy-aliyun.yml)（SSH 方案），可与 Webhook **二选一**或并存（会重复构建）；仅用 Webhook 时建议把该 workflow 改为仅 `workflow_dispatch` 或删除。
 
 ## API 说明
 

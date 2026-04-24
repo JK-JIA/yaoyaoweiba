@@ -1,4 +1,4 @@
-# 若已用「GitHub Webhook + scripts/github-webhook-deploy.mjs」部署，请勿与 SSH 自动部署重复启用。
+# 若已用「GitHub Webhook + deploy/webhook」部署，请勿与 SSH 自动部署重复启用。
 #
 # 在 GitHub 仓库 Settings → Secrets and variables → Actions 中配置：
 #   DEPLOY_HOST      服务器公网 IP 或域名

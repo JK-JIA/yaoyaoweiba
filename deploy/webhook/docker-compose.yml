@@ -1,0 +1,23 @@
+# 与主栈分离：仅启动 GitHub Webhook，不参与 scripts/deploy-update.sh 的 web/api 构建。
+# 用法：cd deploy/webhook && docker compose build && docker compose up -d
+# 需先复制 env.example → .env.webhook（与本文件同目录）
+
+services:
+  github-webhook:
+    build:
+      context: ../..
+      dockerfile: deploy/webhook/Dockerfile
+    container_name: yaoyaoweiba-github-webhook
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8787:8787"
+    env_file:
+      - .env.webhook
+    environment:
+      WEBHOOK_REPO_ROOT: /repo
+      GITHUB_WEBHOOK_HOST: 0.0.0.0
+      GITHUB_WEBHOOK_PORT: "8787"
+    volumes:
+      - ../../:/repo:rw
+      - /var/run/docker.sock:/var/run/docker.sock
+    working_dir: /repo

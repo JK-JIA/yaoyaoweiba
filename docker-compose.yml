@@ -34,29 +34,5 @@ services:
     depends_on:
       - api
 
-  # GitHub Webhook 自动部署（方案二）：需 .env.webhook、根目录 .env 中 COMPOSE_PROFILES=webhook
-  # 启动：docker compose --profile webhook up -d github-webhook
-  # 监听默认映射到宿主机 127.0.0.1:8787，由 Nginx HTTPS 反代；挂载 docker.sock 等同宿主机 root 操作 Docker，请谨慎。
-  github-webhook:
-    profiles:
-      - webhook
-    build:
-      context: .
-      dockerfile: scripts/github-webhook/Dockerfile
-    container_name: yaoyaoweiba-github-webhook
-    restart: unless-stopped
-    ports:
-      - "${GITHUB_WEBHOOK_BIND:-127.0.0.1}:8787:8787"
-    env_file:
-      - .env.webhook
-    environment:
-      WEBHOOK_REPO_ROOT: /repo
-      GITHUB_WEBHOOK_HOST: 0.0.0.0
-      GITHUB_WEBHOOK_PORT: "8787"
-    volumes:
-      - .:/repo:rw
-      - /var/run/docker.sock:/var/run/docker.sock
-    working_dir: /repo
-
 volumes:
   api_data:
