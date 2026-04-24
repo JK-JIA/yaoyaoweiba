@@ -20,7 +20,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = path.resolve(__dirname, "..");
+const REPO_ROOT = process.env.WEBHOOK_REPO_ROOT
+  ? path.resolve(process.env.WEBHOOK_REPO_ROOT)
+  : path.resolve(__dirname, "..");
 
 const SECRET = process.env.GITHUB_WEBHOOK_SECRET || "";
 const PORT = Number(process.env.GITHUB_WEBHOOK_PORT || "8787", 10);
@@ -42,7 +44,7 @@ function verifySignature(rawBody, sigHeader) {
   const ours = crypto.createHmac("sha256", SECRET).update(rawBody).digest("hex");
   try {
     return crypto.timingSafeEqual(Buffer.from(theirs, "hex"), Buffer.from(ours, "hex"));
-  } catch {
+  } catch (_e) {
     return false;
   }
 }
@@ -51,11 +53,15 @@ function shouldDeploy(bodyStr) {
   let payload;
   try {
     payload = JSON.parse(bodyStr);
-  } catch {
+  } catch (_e) {
     return false;
   }
-  if (REPO_FULL && payload.repository?.full_name !== REPO_FULL) {
-    return false;
+  if (REPO_FULL) {
+    const repo = payload.repository;
+    const fullName = repo && repo.full_name;
+    if (fullName !== REPO_FULL) {
+      return false;
+    }
   }
   if (payload.ref !== `refs/heads/${BRANCH}`) {
     return false;
@@ -84,7 +90,7 @@ function runDeploy() {
   child.on("error", (err) => {
     try {
       fs.writeSync(logFd, `spawn error: ${err.message}\n`);
-    } catch {
+    } catch (_e) {
       /* ignore */
     }
   });
@@ -94,7 +100,7 @@ function runDeploy() {
 function pathnameOnly(url) {
   try {
     return new URL(url || "/", "http://localhost").pathname;
-  } catch {
+  } catch (_e) {
     return "";
   }
 }

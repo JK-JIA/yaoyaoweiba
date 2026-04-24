@@ -5,6 +5,8 @@
 #   sudo systemctl enable --now github-webhook-deploy
 #
 # 依赖：服务器已安装 Node（建议 v18+），项目已 clone，且存在可写的 logs/ 目录（脚本会自动创建）。
+#
+# 更推荐：无需宿主机 Node，用 Docker 跑 Webhook（见 README「GitHub Webhook」与 docker-compose 中 github-webhook 服务）。
 
 [Unit]
 Description=GitHub webhook → yaoyaoweiba deploy-update.sh

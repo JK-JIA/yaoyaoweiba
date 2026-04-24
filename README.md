@@ -84,7 +84,31 @@ docker compose build web && docker compose up -d
 
 ### 如何启动 webhook 进程
 
-**方式 A：前台调试（改完配置先看日志）**
+**推荐：Docker 容器（无需在宿主机安装 Node）**
+
+1. 项目根已有 `docker-compose.yml` 中的 **`github-webhook`** 服务（`profiles: webhook`）。在根目录 **`.env`** 增加一行（与 `.env.webhook` 并列，勿混进 Docker 业务变量也可）：
+
+   ```env
+   COMPOSE_PROFILES=webhook
+   ```
+
+   这样之后执行 `scripts/deploy-update.sh` 里的 `docker compose up -d` 时，会一并保持 Webhook 容器运行。
+
+2. 复制并编辑 **`/.env.webhook`**（与 README 上文「密钥与配置」一致）。
+
+3. 构建并启动 Webhook 容器：
+
+   ```bash
+   cd /path/to/yaoyaoweiba-site
+   docker compose --profile webhook build github-webhook
+   docker compose --profile webhook up -d github-webhook
+   ```
+
+4. 默认把容器 **8787** 映射到宿主机 **`127.0.0.1:8787`**（可用环境变量 `GITHUB_WEBHOOK_BIND` 改成 `0.0.0.0`，仍建议前面用 Nginx 做 HTTPS）。健康检查：`curl -sS http://127.0.0.1:8787/health`。
+
+5. **安全说明**：容器挂载了 **`/var/run/docker.sock`**，Webhook 进程可调用宿主 Docker（与 `deploy-update.sh` 行为一致），等价于高权限；请保证 **Secret** 足够强，且 **不要**把未鉴权的 8787 暴露到公网。
+
+**备选：宿主机直接跑 Node（需 Node 18+）**
 
 ```bash
 cd /path/to/yaoyaoweiba-site
@@ -92,17 +116,15 @@ set -a && source .env.webhook && set +a
 node scripts/github-webhook-deploy.mjs
 ```
 
-看到终端输出 `github-webhook-deploy: http://127.0.0.1:8787/github/webhook` 即正常；本机可 `curl -sS http://127.0.0.1:8787/health`。按 `Ctrl+C` 结束。
+**备选：systemd 常驻 Node**（见下文第 4 节）：[`scripts/github-webhook-deploy.service`](scripts/github-webhook-deploy.service)。
 
-**方式 B：生产用 systemd 常驻**（见下文第 4 节）：改好 `github-webhook-deploy.service` 后 `enable --now`，开机自启。
-
-默认进程只监听 **127.0.0.1:8787**，公网由 **Nginx 443 HTTPS** 反代到该端口；**不要把 8787 直接暴露到公网**（除非你自己配 TLS 并清楚风险）。
+公网访问仍由 **Nginx 443 HTTPS** 反代到 **`127.0.0.1:8787`**（或你设置的 `GITHUB_WEBHOOK_BIND`）。
 
 ### 1. 服务器准备
 
 - 已 `git clone` 本仓库，且 `docker compose`、`.env` 可正常手动部署。
-- 安装 **Node.js 18+**（`node -v`）。
-- 建议专用用户（如 `deploy`），对项目目录有读写权，且在 `docker` 组内。
+- 使用 **Webhook 容器**时，宿主机**不必**安装 Node；若不用容器，则需 **Node.js 18+**。
+- 建议专用用户（如 `deploy`），对项目目录有读写权；宿主机直接跑 `deploy-update.sh` 时用户需在 **docker** 组内。
 
 ### 2. Webhook 密钥与配置
 
@@ -115,7 +137,7 @@ cp scripts/env.webhook.example .env.webhook
 
 ### 3. Nginx 对外 HTTPS
 
-将 [`scripts/nginx-webhook-snippet.conf`](scripts/nginx-webhook-snippet.conf) 中的 `location` 块加入你已有 **HTTPS** 的 `server { }`（域名证书建议 Let’s Encrypt）。`proxy_pass` 端口与 `.env.webhook` 里 `GITHUB_WEBHOOK_PORT` 一致（默认 8787）。
+将 [`scripts/nginx-webhook-snippet.conf`](scripts/nginx-webhook-snippet.conf) 中的 `location` 块加入你已有 **HTTPS** 的 `server { }`（域名证书建议 Let’s Encrypt）。`proxy_pass` 指向 **`http://127.0.0.1:8787`**（与 compose 默认映射一致；若改了 `GITHUB_WEBHOOK_BIND` 或端口，需同步修改）。
 
 ### 4. systemd 常驻
 
