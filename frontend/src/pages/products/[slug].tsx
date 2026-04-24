@@ -1,7 +1,7 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useCart } from "@/hooks/useCart";
 import ImagePreviewLightbox from "@/components/ImagePreviewLightbox";
 import { fetchProductsFromApi } from "@/lib/api";
@@ -42,6 +42,42 @@ export default function ProductDetailPage() {
     setLightboxOpen(true);
   };
 
+  const swipeRef = useRef<{ x: number; y: number; tracking: boolean }>({ x: 0, y: 0, tracking: false });
+  const suppressLightboxClickRef = useRef(false);
+
+  const handleGalleryTouchStart = (event: React.TouchEvent) => {
+    if (gallery.length < 2) return;
+    const t = event.touches[0];
+    swipeRef.current = { x: t.clientX, y: t.clientY, tracking: true };
+  };
+
+  const handleGalleryTouchEnd = (event: React.TouchEvent) => {
+    if (gallery.length < 2 || !swipeRef.current.tracking) return;
+    swipeRef.current.tracking = false;
+    const t = event.changedTouches[0];
+    const dx = t.clientX - swipeRef.current.x;
+    const dy = t.clientY - swipeRef.current.y;
+    const minSwipe = 48;
+    if (Math.abs(dx) < minSwipe || Math.abs(dx) < Math.abs(dy) * 1.15) return;
+    suppressLightboxClickRef.current = true;
+    window.setTimeout(() => {
+      suppressLightboxClickRef.current = false;
+    }, 380);
+    setActiveImage((i) => {
+      if (dx < 0) return (i + 1) % gallery.length;
+      return (i - 1 + gallery.length) % gallery.length;
+    });
+  };
+
+  const handleGalleryTouchCancel = () => {
+    swipeRef.current.tracking = false;
+  };
+
+  const handleMainImageActivate = () => {
+    if (suppressLightboxClickRef.current) return;
+    openLightbox(activeImage);
+  };
+
   if (!router.isReady || loading) {
     return (
       <section className="container-main py-12">
@@ -79,9 +115,14 @@ export default function ProductDetailPage() {
           <div className="min-w-0">
             <button
               type="button"
-              onClick={() => openLightbox(activeImage)}
-              className="group relative block w-full cursor-zoom-in overflow-hidden rounded-2xl outline-none ring-brand-400 focus-visible:ring-2"
-              aria-label="点击放大查看商品图"
+              onClick={handleMainImageActivate}
+              onTouchStart={handleGalleryTouchStart}
+              onTouchEnd={handleGalleryTouchEnd}
+              onTouchCancel={handleGalleryTouchCancel}
+              className={`group relative block w-full overflow-hidden rounded-2xl outline-none ring-brand-400 focus-visible:ring-2 ${
+                gallery.length > 1 ? "touch-pan-y cursor-grab active:cursor-grabbing" : "cursor-zoom-in"
+              }`}
+              aria-label={gallery.length > 1 ? "滑动切换图片，点击放大查看商品图" : "点击放大查看商品图"}
             >
               <div className="flex h-[min(22rem,58vh)] min-h-[14rem] w-full items-center justify-center rounded-2xl bg-stone-50 sm:min-h-[16rem] md:h-80 md:min-h-0">
                 <img
