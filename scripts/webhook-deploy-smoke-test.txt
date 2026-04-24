@@ -1,0 +1,4 @@
+# Webhook 自动部署冒烟测试
+# 推送到 main 后应触发服务器执行 deploy-update.sh；验证后可删除本文件。
+
+marker=webhook-smoke-test-ok
