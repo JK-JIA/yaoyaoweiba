@@ -19,6 +19,7 @@ coverage/
 .DS_Store
 
 .env
+.env.webhook
 *.log
 
 # 运行时数据（本地 / 服务器卷，勿提交）

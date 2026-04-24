@@ -1,0 +1,38 @@
+# 若已用「GitHub Webhook + scripts/github-webhook-deploy.mjs」部署，请勿与 SSH 自动部署重复启用。
+#
+# 在 GitHub 仓库 Settings → Secrets and variables → Actions 中配置：
+#   DEPLOY_HOST      服务器公网 IP 或域名
+#   DEPLOY_USER      SSH 登录用户（建议专用 deploy 用户，加入 docker 组）
+#   DEPLOY_SSH_KEY   该用户对应私钥全文（-----BEGIN ... END-----）
+#   DEPLOY_PATH      仓库在服务器上的绝对路径，例如 /home/deploy/yaoyaoweiba-site
+#
+# 阿里云安全组需放行 SSH（22）给 GitHub Actions（可选：仅 workflow_dispatch 手动触发则只放行你的 IP）。
+# 首次在服务器上需已 clone 仓库、配置好 .env，且该用户可无密码执行 docker（用户已在 docker 组内）。
+
+name: Deploy to server
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH and run deploy-update.sh
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          command_timeout: 30m
+          script_stop: true
+          script: |
+            set -euo pipefail
+            cd "${{ secrets.DEPLOY_PATH }}"
+            bash scripts/deploy-update.sh
